@@ -8,7 +8,7 @@ class ServerTest(unittest.TestCase):
         pass
 
     def test_the_server_exists(self):
-        pass
+        server = Server()
 
 if __name__ == '__main__':
     unittest.main()

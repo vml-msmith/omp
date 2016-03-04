@@ -14,11 +14,23 @@ server:
   volumes:
     - ../:/mnt
   ports:
-    - '5000:5000'
+    - '8080:8080'
   environment:
     PYTHONPATH: src
     PYTHONUSERBASE: /mnt/vendor
-  command: python omush/server.py
+  command: python -u omush/server.py
+
+client:
+  image: python:3
+  working_dir: /mnt
+  volumes:
+    - ../:/mnt
+  environment:
+    PYTHONPATH: src
+    PYTHONUSERBASE: /mnt/vendor
+  command: python client.py ws://server:9000 debug
+  links:
+    - server
 
 test:
   image: python:3
