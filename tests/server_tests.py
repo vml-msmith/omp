@@ -1,15 +1,14 @@
 import unittest
 
-class NewVisitorTest(unittest.TestCase):
-
+class ServerTest(unittest.TestCase):
     def setUp(self):
         pass
 
     def tearDown(self):
         pass
 
-    def test_does_fail_when_we_want(self):
-        pass
+    def test_the_server_exists(self):
+        server = Server()
 
 if __name__ == '__main__':
     unittest.main()
