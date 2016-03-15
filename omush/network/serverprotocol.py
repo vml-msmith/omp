@@ -35,5 +35,14 @@ class OMushServerProtocol(WebSocketServerProtocol):
         self.clientManager.releaseClient(connectedClient=self.client)
 
     def onMessage(self, payload, isBinary):
+        """Handle non binary messages from the websocket client.
+
+        Handles non binary messages by simply decoding via utf8 and passing to
+        self.client.
+
+        Handles binary messages by silently dropping them.
+
+        TODO(msmith): Log or otherwise handle the binary messages.
+        """
         if not isBinary:
             self.client.handleMessage(payload.decode('utf8'))
