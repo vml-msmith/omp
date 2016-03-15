@@ -33,3 +33,7 @@ class OMushServerProtocol(WebSocketServerProtocol):
         """
         self.client = None
         self.clientManager.releaseClient(connectedClient=self.client)
+
+    def onMessage(self, payload, isBinary):
+        if not isBinary:
+            self.client.handleMessage(payload.decode('utf8'))

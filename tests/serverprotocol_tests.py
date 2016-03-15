@@ -13,6 +13,10 @@ class MockClient(object):
     def __init__(self):
         pass
 
+    def handleMessage(self, msg):
+        self.message = msg
+
+
 class MockClientManager(object):
     def provisionClient(self, protocolClient=None):
         # save the client somewhere.. in a list.
@@ -61,6 +65,19 @@ class SeverProtocolTest(unittest.TestCase):
         # local scope in the client variable of this method. All other
         # references should be killed.
         self.assertEquals(len(gc.get_referrers(client)), 1)
+
+    def test_protocol_has_on_message_method(self):
+        self.protocol.onOpen()
+        # Not binary messages should be passed along to the connectedClient
+        # after being decoded.
+        message = "test".encode('utf8')
+        self.protocol.onMessage(payload=message, isBinary=False)
+        self.assertEquals(self.protocol.client.message, message.decode('utf8'))
+
+        # Binary messages should not be passed to the connectedClient.
+        message = "Another".encode('utf8')
+        self.protocol.onMessage(payload=message, isBinary=True)
+        self.assertNotEquals(self.protocol.client.message, message.decode('utf8'))
 
 if __name__ == '__main__':
     unittest.main()
