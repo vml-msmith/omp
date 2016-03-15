@@ -25,3 +25,11 @@ class OMushServerProtocol(WebSocketServerProtocol):
         """
         self.clientManager = self.factory.getClientManager()
         self.client = self.clientManager.provisionClient(protocolClient=self)
+        super(OMushServerProtocol, self).onOpen()
+
+    def onClose(self, wasClean, code, reason):
+        """The connection to the client has been closed by the server or by the
+        client. Drop all references to the client.
+        """
+        self.client = None
+        self.clientManager.releaseClient(connectedClient=self.client)
