@@ -35,6 +35,11 @@ class MockSocketCommandQuitTwo(MockSocketCommand):
 class MockCommandTest(MockSocketCommand):
     command = "test"
 
+class MockProtocolClient(object):
+    def notify(self, msg):
+        self.output = msg
+
+
 class MockCommandList(object):
     def get_socket_commands(self):
         return [MockCommandTest, MockSocketCommandQuit, MockSocketCommandQuitTwo]
@@ -114,6 +119,13 @@ class ClientTest(unittest.TestCase):
         client.setLoggedInUser(user_object)
         client.handleMessage("connected")
         self.assertEquals(executed_command, "connected")
+
+    def test_notify(self):
+        client = OMushConnectedClient()
+        client.protocolClient = MockProtocolClient()
+        client.notify("This is a test")
+        self.assertEquals(client.protocolClient.output, "This is a test")
+
 
 if __name__ == '__main__':
     unittest.main()

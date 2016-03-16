@@ -10,6 +10,10 @@ class OMushConnectedClient(object):
         """Set the logged in user object."""
         self.user_object = user
 
+    def notify(self, message):
+        """Send a string notification to the connected socket."""
+        self.protocolClient.notify(message)
+
     def handleMessage(self, message):
         """Handle a string message "input" to be executed from this client.
 
