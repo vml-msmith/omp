@@ -1,5 +1,7 @@
 """Module docstring
 """
+
+
 class OMushConnectedClient(object):
     """A client object that associates a socket connection and a user objec.t
 
@@ -39,9 +41,13 @@ class OMushConnectedClient(object):
             command.execute(client=self,
                             game=self.connected_client_manager.game)
         else:
-            self._handle_unknown_message(message)
+            self._handle_unknown_message()
 
-    def _handle_unknown_message(self, message):
+    def _handle_unknown_message(self):
+        """The client sent a message we don't know how to handle."""
+        # msmith(ENHANCEMENT): In the future, I think we should log the most
+        # common HUH generating commands, including who issues them at what
+        # point.
         self.protocol_client.notify("Huh?")
 
     def _match_command_from_message(self, message):
