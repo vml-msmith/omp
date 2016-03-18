@@ -1,9 +1,9 @@
 import unittest
 from omush.network.client import OMushConnectedClient
 
-executed_command = None
-
 class MockSocketCommand(object):
+    command = "none"
+
     @classmethod
     def match(cls, pattern, obj=None):
         if pattern == cls.command:
@@ -12,8 +12,7 @@ class MockSocketCommand(object):
 
     @classmethod
     def execute(cls, client=None, obj=None, game=None):
-        global executed_command
-        executed_command = cls.command
+        client.notify(cls.command)
 
 class MockSocketCommandConnected(MockSocketCommand):
     command = "connected"
@@ -28,21 +27,26 @@ class MockSocketCommandQuit(MockSocketCommand):
 class MockSocketCommandQuitTwo(MockSocketCommand):
     command = "QUIT"
 
-    def execute(client=None, obj=None, game=None):
-        global executed_command
-        executed_command = "QUIT2"
+    @classmethod
+    def execute(cls, client=None, obj=None, game=None):
+        client.notify("QUIT2")
 
 class MockCommandTest(MockSocketCommand):
     command = "test"
 
 class MockProtocolClient(object):
+    def __init__(self):
+        self.output = None
+
     def notify(self, msg):
         self.output = msg
 
 
 class MockCommandList(object):
     def get_socket_commands(self):
-        return [MockCommandTest, MockSocketCommandQuit, MockSocketCommandQuitTwo]
+        return [MockCommandTest,
+                MockSocketCommandQuit,
+                MockSocketCommandQuitTwo]
 
     def get_not_logged_in_commands(self):
         return [MockCommandTest, MockSocketCommandLogin, MockCommandTest]
@@ -54,77 +58,74 @@ class MockClientManager(object):
     def __init__(self):
         self.game = object()
 
+
 class ClientTest(unittest.TestCase):
     def setUp(self):
-        pass
+        """Create a default mock protocol"""
+        self._protocol_client = MockProtocolClient()
 
-    def tearDown(self):
-        pass
+    def _create_connected_client(self):
+        """Internal: Create a connected client with a new manager."""
+        client_manager = MockClientManager()
+        client = OMushConnectedClient(protocol_client=self._protocol_client,
+                                      connected_client_manager=client_manager)
+        return client
 
-    def test_handle_message(self):
-        client = OMushConnectedClient()
-        client.command_list = MockCommandList()
-        client.handleMessage(message="Test")
 
     def test_handle_message_socket_level(self):
         """Socket level commands should be checked and executed before any other
         command pareser gets a hold of the command. These should be executable
         no matter if a client is logged in or not."""
-
-        client = OMushConnectedClient()
+        client = self._create_connected_client()
         # We need to pass in a command to the socket level.
         client.command_list = MockCommandList()
-        client.clientManager = MockClientManager()
-        client.handleMessage("QUIT")
+        client.handle_message("QUIT")
 
-        global executed_command
-        self.assertEquals(executed_command, "QUIT")
+        self.assertEquals(self._protocol_client.output, "QUIT")
         # The commands should no longer try to execute once a result has been
         # found. Command2 should never be hit because QUIT is found first.
-        self.assertNotEquals(executed_command, "QUIT2")
+        self.assertNotEquals(self._protocol_client.output, "QUIT2")
 
 
     def test_handle_message_login_level(self):
+        """Should only use login level commandsfor non logged in clients."""
         # Login commands should only be executed if the client is in a
         # "Login Screen" state. Once the user has logged in, these commands
         # should no longer be availble.
-        client = OMushConnectedClient()
+        client = self._create_connected_client()
         # We need to pass in a command to the socket level.
         client.command_list = MockCommandList()
-        client.clientManager = MockClientManager()
-        client.handleMessage("login")
 
-        global executed_command
-        self.assertEquals(executed_command, "login")
+        client.handle_message("login")
 
-        executed_command = None
+        self.assertEquals(self._protocol_client.output, "login")
+
         user_object = object()
-        client.setLoggedInUser(user_object)
-        client.handleMessage("login")
-        self.assertNotEquals(executed_command, "login")
+        client.set_logged_in_user(user_object)
+        client.handle_message("login")
+        self.assertNotEquals(self._protocol_client.output, "login")
 
     def test_handle_message_connected_level(self):
+        """Should only use connected commands for logged in client."""
         # Connected commands should only work when a user is connected.
-        client = OMushConnectedClient()
+        client = self._create_connected_client()
+
         # We need to pass in a command to the socket level.
         client.command_list = MockCommandList()
-        client.clientManager = MockClientManager()
-        client.handleMessage("connected")
+        client.handle_message("connected")
 
-        global executed_command
-        self.assertNotEquals(executed_command, "connected")
+        self.assertNotEquals(self._protocol_client.output, "connected")
 
-        executed_command = None
         user_object = object()
-        client.setLoggedInUser(user_object)
-        client.handleMessage("connected")
-        self.assertEquals(executed_command, "connected")
+        client.set_logged_in_user(user_object)
+        client.handle_message("connected")
+        self.assertEquals(self._protocol_client.output, "connected")
 
     def test_notify(self):
-        client = OMushConnectedClient()
-        client.protocolClient = MockProtocolClient()
+        """Notify method will call notify on the protocol."""
+        client = self._create_connected_client()
         client.notify("This is a test")
-        self.assertEquals(client.protocolClient.output, "This is a test")
+        self.assertEquals(self._protocol_client.output, "This is a test")
 
 
 if __name__ == '__main__':
