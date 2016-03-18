@@ -25,14 +25,15 @@ class OMushServerProtocol(WebSocketServerProtocol):
         """
         self.client_manager = self.factory.get_client_manager()
         self.client = self.client_manager.provision_client(protocol_client=self)
+        print("Done the provision.")
         super(OMushServerProtocol, self).onOpen()
 
     def onClose(self, wasClean, code, reason):
         """The connection to the client has been closed by the server or by the
         client. Drop all references to the client.
         """
-        self.client = None
         self.client_manager.release_client(connected_client=self.client)
+        self.client = None
 
     def onMessage(self, payload, isBinary):
         """Handle non binary messages from the websocket client.

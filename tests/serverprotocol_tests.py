@@ -24,7 +24,8 @@ class MockClientManager(object):
         return self.client
 
     def release_client(self, connected_client):
-        self.client = None
+        if connected_client is self.client:
+            self.client = None
 
 class MockProtocolFactory(WebSocketServerFactory):
     def get_client_manager(self):
