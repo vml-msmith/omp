@@ -23,8 +23,8 @@ class OMushServerProtocol(WebSocketServerProtocol):
         Register the connected socket with the game via the clientmanager and
         provision a client object for this connection.
         """
-        self.clientManager = self.factory.getClientManager()
-        self.client = self.clientManager.provisionClient(protocolClient=self)
+        self.client_manager = self.factory.get_client_manager()
+        self.client = self.client_manager.provision_client(protocol_client=self)
         super(OMushServerProtocol, self).onOpen()
 
     def onClose(self, wasClean, code, reason):
@@ -32,7 +32,7 @@ class OMushServerProtocol(WebSocketServerProtocol):
         client. Drop all references to the client.
         """
         self.client = None
-        self.clientManager.releaseClient(connectedClient=self.client)
+        self.client_manager.release_client(connected_client=self.client)
 
     def onMessage(self, payload, isBinary):
         """Handle non binary messages from the websocket client.
@@ -45,4 +45,4 @@ class OMushServerProtocol(WebSocketServerProtocol):
         TODO(msmith): Log or otherwise handle the binary messages.
         """
         if not isBinary:
-            self.client.handleMessage(payload.decode('utf8'))
+            self.client.handle_message(payload.decode('utf8'))

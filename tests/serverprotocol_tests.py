@@ -13,21 +13,21 @@ class MockClient(object):
     def __init__(self):
         pass
 
-    def handleMessage(self, msg):
+    def handle_message(self, msg):
         self.message = msg
 
 
 class MockClientManager(object):
-    def provisionClient(self, protocolClient=None):
+    def provision_client(self, protocol_client=None):
         # save the client somewhere.. in a list.
         self.client = MockClient()
         return self.client
 
-    def releaseClient(self, connectedClient):
+    def release_client(self, connected_client):
         self.client = None
 
 class MockProtocolFactory(WebSocketServerFactory):
-    def getClientManager(self):
+    def get_client_manager(self):
         return MockClientManager()
 
 class SeverProtocolTest(unittest.TestCase):
@@ -48,8 +48,8 @@ class SeverProtocolTest(unittest.TestCase):
     def test_protocol_has_on_open_method(self):
         self.protocol.onOpen()
         self.assertTrue(self.protocol.client is not None)
-        self.assertTrue(self.protocol.clientManager is not None)
-        self.assertEquals(self.protocol.client, self.protocol.clientManager.client)
+        self.assertTrue(self.protocol.client_manager is not None)
+        self.assertEquals(self.protocol.client, self.protocol.client_manager.client)
 
     def test_protocol_has_on_close_method(self):
         import gc

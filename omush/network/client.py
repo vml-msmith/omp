@@ -21,6 +21,10 @@ class OMushConnectedClient(object):
         """Send a string notification to the connected socket."""
         self.protocol_client.notify(message)
 
+    def close(self):
+        self.notify("Goodbye.")
+        self.protocol_client.sendClose()
+
     def handle_message(self, message):
         """Handle a string message "input" to be executed from this client.
 

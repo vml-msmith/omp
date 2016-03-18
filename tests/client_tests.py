@@ -37,9 +37,13 @@ class MockCommandTest(MockSocketCommand):
 class MockProtocolClient(object):
     def __init__(self):
         self.output = None
+        self.has_quit = False
 
     def notify(self, msg):
         self.output = msg
+
+    def sendClose(self):
+        self.has_quit = True
 
 
 class MockCommandList(object):
@@ -71,6 +75,13 @@ class ClientTest(unittest.TestCase):
                                       connected_client_manager=client_manager)
         return client
 
+
+    def test_client_quit(self):
+        """Client object should have a quit and send quit to the protocol."""
+        client = self._create_connected_client()
+        self.assertFalse(self._protocol_client.has_quit)
+        client.close()
+        self.assertTrue(self._protocol_client.has_quit)
 
     def test_handle_message_socket_level(self):
         """Socket level commands should be checked and executed before any other
