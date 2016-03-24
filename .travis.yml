@@ -1,1 +1,1 @@
-sudo: falselanguage: pythonpython:  - "3.3"before_script:  - pip3 install -r requirements.txt --user --upgrade  - pip3 install nosescript:  - nosetests
+sudo: falselanguage: pythonpython:  - "3.3"before_script:  - pip3 install -r requirements.txt --upgrade  - pip3 install nosescript:  - nosetests
