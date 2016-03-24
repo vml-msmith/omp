@@ -1,1 +1,1 @@
-ws4pycherrypyautobahn
+ws4pycherrypyautobahnasyncio
