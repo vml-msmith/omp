@@ -16,9 +16,13 @@ class MockClient(object):
 class MockClient(object):
     def __init__(self):
         self.user_object = None
+        self.output = None
 
     def set_logged_in_user(self, user):
         self.user_object = user;
+
+    def notify(self, message):
+        self.output = message
 
 class MockGame(object):
     def __init__(self):
@@ -99,11 +103,25 @@ class CommandLoginTest(unittest.TestCase):
                              obj=None,
                              game=game)
         self.assertEquals(client.user_object, None)
+        self.assertEquals(client.output, "Username or password not found.")
+
         CommandLogin.execute(pattern='connect other password',
                              client=client,
                              obj=None,
                              game=game)
         self.assertEquals(client.user_object, None)
+
+    def test_execute_notifies_user_on_fail(self):
+        client = MockClient()
+        client.user_object = None
+        game = MockGame()
+        game.database.objects.append(MockPlayerObject('michael', 'blahblah'))
+
+        CommandLogin.execute(pattern='connect michael password',
+                             client=client,
+                             obj=None,
+                             game=game)
+        self.assertEquals(client.output, "Username or password not found.")
 
 if __name__ == '__main__':
     unittest.main()

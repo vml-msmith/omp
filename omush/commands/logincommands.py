@@ -46,5 +46,5 @@ class CommandLogin(Command):
         if player is not None:
             if player.match_password(args['password']):
                 client.set_logged_in_user(player)
-
-        # Search for name in DB. Oh wait! We don't have a database!
+                return
+        client.notify("Username or password not found.")
