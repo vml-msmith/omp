@@ -79,10 +79,11 @@ class CommandLoginTest(unittest.TestCase):
 
     def test_arg_matcher(self):
         """Test the arg matcher returns the correct args"""
-        args = CommandLogin.get_args("connect michael password")
+        command = CommandLogin.provision()
+        args = command.get_args("connect michael password")
         self.assertEquals(args['name'], 'michael')
         self.assertEquals(args['password'], 'password')
-        args = CommandLogin.get_args("connect 'michael smith' password")
+        args = command.get_args("connect 'michael smith' password")
         self.assertEquals(args['name'], 'michael smith')
         self.assertEquals(args['password'], 'password')
 
@@ -92,20 +93,21 @@ class CommandLoginTest(unittest.TestCase):
         game = MockGame()
         game.database.objects.append(MockPlayerObject('michael', 'password'))
 
-        CommandLogin.execute(pattern='connect michael password',
-                             client=client,
-                             obj=None,
-                             game=game)
+        command = CommandLogin.provision()
+        command.execute(pattern='connect michael password',
+                        client=client,
+                        obj=None,
+                        game=game)
         self.assertNotEquals(client.user_object, None)
         client.user_object = None
-        CommandLogin.execute(pattern='connect michael pass',
+        command.execute(pattern='connect michael pass',
                              client=client,
                              obj=None,
                              game=game)
         self.assertEquals(client.user_object, None)
         self.assertEquals(client.output, "Username or password not found.")
 
-        CommandLogin.execute(pattern='connect other password',
+        command.execute(pattern='connect other password',
                              client=client,
                              obj=None,
                              game=game)
@@ -117,7 +119,8 @@ class CommandLoginTest(unittest.TestCase):
         game = MockGame()
         game.database.objects.append(MockPlayerObject('michael', 'blahblah'))
 
-        CommandLogin.execute(pattern='connect michael password',
+        command = CommandLogin.provision()
+        command.execute(pattern='connect michael password',
                              client=client,
                              obj=None,
                              game=game)

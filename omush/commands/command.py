@@ -8,5 +8,8 @@ class Command(object):
         return False
 
     @classmethod
-    def execute(cls, client=None, obj=None, game=None):
+    def provision(cls):
+        return cls()
+
+    def execute(self, client=None, obj=None, game=None):
         pass

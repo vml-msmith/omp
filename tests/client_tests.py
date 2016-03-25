@@ -11,8 +11,11 @@ class MockSocketCommand(object):
         return False
 
     @classmethod
-    def execute(cls, client=None, obj=None, game=None):
-        client.notify(cls.command)
+    def provision(cls):
+        return cls()
+
+    def execute(self, client=None, obj=None, game=None):
+        client.notify(self.command)
 
 class MockSocketCommandConnected(MockSocketCommand):
     command = "connected"
@@ -27,8 +30,7 @@ class MockSocketCommandQuit(MockSocketCommand):
 class MockSocketCommandQuitTwo(MockSocketCommand):
     command = "QUIT"
 
-    @classmethod
-    def execute(cls, client=None, obj=None, game=None):
+    def execute(self, client=None, obj=None, game=None):
         client.notify("QUIT2")
 
 class MockCommandTest(MockSocketCommand):

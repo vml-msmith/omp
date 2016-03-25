@@ -42,8 +42,8 @@ class OMushConnectedClient(object):
         """
         command = self._match_command_from_message(message)
         if command is not None:
-            command.execute(client=self,
-                            game=self.connected_client_manager.game)
+            command.provision().execute(client=self,
+                                        game=self.connected_client_manager.game)
         else:
             self._handle_unknown_message()
 

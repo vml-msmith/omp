@@ -27,24 +27,25 @@ class CommandLogin(Command):
 
         return False
 
-    @classmethod
-    def get_args(cls, pattern):
-        for p in cls._get_matchers():
+    def get_args(self, pattern):
+        for p in self._get_matchers():
             match = p.match(pattern)
             if match is not None:
                 return match.groupdict()
 
-    @classmethod
-    def execute(cls,
+    def execute(self,
                 pattern=None,
                 client=None,
                 obj=None,
                 game=None):
-        args = cls.get_args(pattern)
+        args = self.get_args(pattern)
         db = game.database
         player = db.find_player_by_name(args['name'])
         if player is not None:
             if player.match_password(args['password']):
                 client.set_logged_in_user(player)
+                #action = game.actionFactory.provision('ActionLogin')
+                #if action is not None:
                 return
+
         client.notify("Username or password not found.")
