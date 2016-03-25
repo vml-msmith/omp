@@ -11,5 +11,5 @@ class Command(object):
     def provision(cls):
         return cls()
 
-    def execute(self, client=None, obj=None, game=None):
+    def execute(self, pattern=None, client=None, obj=None, game=None):
         pass

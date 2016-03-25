@@ -50,6 +50,16 @@ class MockDatabase(object):
 
         return None
 
+class MockAction(object):
+    call_count = 0;
+
+    def __init__(self):
+        MockAction.call_count = 0;
+        super().__init__()
+
+    def enact(self):
+        MockAction.call_count = MockAction.call_count + 1
+
 class CommandLoginTest(unittest.TestCase):
     def setUp(self):
         pass
@@ -125,6 +135,23 @@ class CommandLoginTest(unittest.TestCase):
                              obj=None,
                              game=game)
         self.assertEquals(client.output, "Username or password not found.")
+
+    def test_execute_success_calls_login_action(self):
+        client = MockClient()
+        client.user_object = None
+        game = MockGame()
+        game.database.objects.append(MockPlayerObject('michael', 'password'))
+
+        action = MockAction
+
+        command = CommandLogin.provision()
+        command.action = action
+
+        command.execute(pattern='connect michael password',
+                        client=client,
+                        obj=None,
+                        game=game)
+        self.assertEquals(action.call_count, 1)
 
 if __name__ == '__main__':
     unittest.main()
