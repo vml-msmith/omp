@@ -39,9 +39,10 @@ class Database(object):
 class DatabaseMatcher(object):
     @staticmethod
     def find_player_by_name(database, name):
+        name = name.lower()
         players = database.get_all_objects_of_type("player")
         for k, v in players.items():
-            if v.name() == name:
+            if v.name().lower() == name:
                 return v
         return None
 
@@ -66,7 +67,15 @@ class DatabasePlayer(DatabaseObject):
     db_type = "player"
 
     def __init__(self, **kwargs):
+        self._password = "pass"
         super().__init__(**kwargs)
+
+    def set_password(self, password):
+        self._password = password
+
+    def match_password(self, password):
+        return False
+
 
 class DatabaseThing(DatabaseObject):
     db_type = "thing"
