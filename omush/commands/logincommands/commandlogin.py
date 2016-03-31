@@ -1,6 +1,6 @@
 """Defines commands that can be used from the login screen.
 """
-from .command import Command
+from ..command import Command
 import re
 
 
@@ -16,7 +16,7 @@ class CommandLogin(Command):
       - connect "<name with spaces>" <password>
       - connect '<name with spaces>' <password>
     """
-    from ..action.actionlogin import ActionLogin
+    from ...actions.actionlogin import ActionLogin
 
     command = "connect"
     action = ActionLogin

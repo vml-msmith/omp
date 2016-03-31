@@ -1,5 +1,5 @@
 import unittest
-from omush.commands.logincommands import CommandLogin
+from omush.commands.logincommands.commandlogin import CommandLogin
 
 class MockClient(object):
     def __init__(self):
@@ -152,6 +152,11 @@ class CommandLoginTest(unittest.TestCase):
                         obj=None,
                         game=game)
         self.assertEquals(action.call_count, 1)
+
+    def test_command_has_correct_action(self):
+        from omush.actions.actionlogin import ActionLogin
+        command = CommandLogin.provision()
+        self.assertEquals(command.action, ActionLogin)
 
 if __name__ == '__main__':
     unittest.main()

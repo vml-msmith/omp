@@ -1,5 +1,5 @@
 import unittest
-from omush.commands.commandquit import CommandQuit
+from omush.commands.servercommands.commandquit import CommandQuit
 
 class MockClient(object):
     def __init__(self):
