@@ -1,1 +1,73 @@
-from autobahn.asyncio.websocket import WebSocketServerProtocol, \    WebSocketServerFactoryclass MyServerProtocol(WebSocketServerProtocol):    """Demo ServerProtocol    The reason behind this protocol is just to demo how the websocket server    protocols work. It is not intended to be a final version.    Key things:      - self.factory contains the factory that created this object. Useful!    """    def onConnect(self, request):        """A user is connecting to the server.        """        print("Client connecting: {0}".format(request.peer))    def onOpen(self):        """The connection to the client has been opened        Register        """        self.factory.register(self)        print("WebSocket connection open.")    def onMessage(self, payload, isBinary):        """Callback for when the client has sent a message to the server.        """        if isBinary:            print("Binary message received: {0} bytes".format(len(payload)))        else:            print("Text message received: {0}".format(payload.decode('utf8')))        # echo back message verbatim        self.sendMessage(payload, isBinary)    def onClose(self, wasClean, code, reason):        """Callback when the connection is closed.        I believe this is called when the CLIENT drops the connection for some        reason.        """        print("WebSocket connection closed: {0}".format(reason))    def connectionLost(self, reason):        """Callback when connection has been dropped from server.        This is called everytime the connection is dropped. Be that from        quitting or otherwise.        """        self.factory.unregister(self)    def getUniqueId(self):        """Get a unique ID for this connection.        Will return the port of the connection. That should be unique.        """        parts = self.peer.split(':')        unique_id = parts[2]        return unique_idclass MyWebSocketServerFactory(WebSocketServerFactory):    """Demo Factory.    The reason behind this factory is to just demo how the websocket server    factory works.    """    def __init__(self, *args, **kwargs):        """Define self.clients as a dictionary.        """        super(MyWebSocketServerFactory, self).__init__(*args, **kwargs)        self.clients = {}    def register(self, client):        """Register a connection that has been established."""        self.clients[client.getUniqueId] = client    def unregister(self, client):        """Unregister a connection that has been dropped."""        self.clients.pop(client.peer)if __name__ == '__main__':    try:        import asyncio    except ImportError:        # Trollius >= 0.3 was renamed        import trollius as asyncio    factory = MyWebSocketServerFactory(u"ws://127.0.0.1:8080", debug=False)    factory.protocol = MyServerProtocol    loop = asyncio.get_event_loop()    coro = loop.create_server(factory, '0.0.0.0', 8080)    server = loop.run_until_complete(coro)    try:        loop.run_forever()    except KeyboardInterrupt:        pass    finally:        server.close()        loop.close()
+from autobahn.asyncio.websocket import WebSocketServerFactory
+from network.serverprotocol import OMushServerProtocol
+from network.clientmanager import OMushConnectedClientManager
+from network.client import OMushConnectedClient
+from commands.commandquit import CommandQuit
+
+class OMushClientCommandList(object):
+    def get_socket_commands(self):
+        return [CommandQuit]
+
+    def get_not_logged_in_commands(self):
+        return []
+
+    def get_logged_in_commands(self):
+        return []
+
+class OMushConnectedClientFactory(object):
+    def provision(self, protocol_client, connected_client_manager):
+        client = OMushConnectedClient(protocol_client=protocol_client,
+                                      connected_client_manager=connected_client_manager)
+        client.command_list = OMushClientCommandList()
+
+        return client
+
+class Game(object):
+    def __init__(self):
+        self.client_manager = OMushConnectedClientManager()
+        self.client_manager.factory = OMushConnectedClientFactory()
+        self.client_manager.game = self
+
+
+class MyWebSocketServerFactory(WebSocketServerFactory):
+    """Demo Factory.
+
+    The reason behind this factory is to just demo how the websocket server
+    factory works.
+    """
+
+    def __init__(self, *args, **kwargs):
+        """Define self.clients as a dictionary.
+        """
+        super(MyWebSocketServerFactory, self).__init__(*args, **kwargs)
+        self.game = None
+
+    def get_client_manager(self):
+        return self.game.client_manager
+
+if __name__ == '__main__':
+    try:
+        import asyncio
+    except ImportError:
+        import trollius as asyncio
+
+    factory = MyWebSocketServerFactory(u"ws://127.0.0.1:8080", debug=False)
+    factory.protocol = OMushServerProtocol
+    factory.game = Game()
+
+    loop = asyncio.get_event_loop()
+    factory.game.core_loop = loop
+    coro = loop.create_server(factory, '0.0.0.0', 8080)
+    server = loop.run_until_complete(coro)
+
+    try:
+        loop.run_forever()
+        import logging
+        logging.warning('Watch out!') # will print a message to the console
+        logging.info('I told you so') # will not print anything
+
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.close()
+        loop.close()
