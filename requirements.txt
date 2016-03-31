@@ -1,1 +1,5 @@
-ws4pycherrypyautobahnasyncio
+ws4py
+cherrypy
+autobahn
+asyncio
+pypubsub
