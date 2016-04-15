@@ -16,6 +16,8 @@ class Database(object):
         if dbref >= self.next_dbref():
             self._nextTopObject = dbref + 1
 
+        db_object.post_db_load(self)
+
     def find_player_by_name(self, name):
         """Find a player by full name
 
@@ -50,6 +52,10 @@ class DatabaseObject(object):
     def __init__(self, **kwargs):
         self._db_ref = None
         self._name = "Thing"
+        self._location = None
+
+        if "name" in kwargs:
+            self._name = kwargs["name"]
 
     def set_name(self, name):
         self._name = name
@@ -63,19 +69,38 @@ class DatabaseObject(object):
     def name(self):
         return self._name
 
+    def post_db_load(self, database):
+        pass
+
+    def register_with_notifier(self, notifier):
+        notifier.subscribe(self.notifier_arrive, 'action.connect')
+        notifier.subscribe(self.notifier_arrive, 'action.arrive')
+        pass
+
+    def notifier_arrive(self, **kwargs):
+        pass
+
+    def notifier_connect(self, **kwargs):
+        pass
+
 class DatabasePlayer(DatabaseObject):
     db_type = "player"
 
     def __init__(self, **kwargs):
-        self._password = "pass"
         super().__init__(**kwargs)
+        self._password = "pass"
 
     def set_password(self, password):
         self._password = password
 
     def match_password(self, password):
-        return False
+        return password == self._password
 
+    def post_db_load(self, database):
+        super().post_db_load(database)
+
+    def register_with_notifier(self, notifier):
+        super().register_with_notifier(notifier)
 
 class DatabaseThing(DatabaseObject):
     db_type = "thing"

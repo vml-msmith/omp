@@ -1,5 +1,6 @@
 import unittest
 from omush.commands.servercommands.commandquit import CommandQuit
+from omush.scope import CommandScope
 
 class MockClient(object):
     def __init__(self):
@@ -27,9 +28,14 @@ class CommandQuitTest(unittest.TestCase):
     def test_command_quit_sends_quit_to_client(self):
         client = MockClient()
         client.is_closed = False
-        CommandQuit.execute(client=client,
-                            obj=None,
-                            game=None)
+
+        command = CommandQuit.provision()
+
+        scope = CommandScope(command='QUIT',
+                             game=None,
+                             client=client)
+        command.execute(scope=scope)
+
         self.assertTrue(client.is_closed)
 
     def test_command_quit_says_goodbye(self):

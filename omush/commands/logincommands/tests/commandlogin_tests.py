@@ -1,5 +1,6 @@
 import unittest
 from omush.commands.logincommands.commandlogin import CommandLogin
+from omush.scope import CommandScope
 
 class MockClient(object):
     def __init__(self):
@@ -57,7 +58,7 @@ class MockAction(object):
         MockAction.call_count = 0;
         super().__init__()
 
-    def enact(self):
+    def enact(self, scope=None):
         MockAction.call_count = MockAction.call_count + 1
 
 class CommandLoginTest(unittest.TestCase):
@@ -104,23 +105,25 @@ class CommandLoginTest(unittest.TestCase):
         game.database.objects.append(MockPlayerObject('michael', 'password'))
 
         command = CommandLogin.provision()
-        command.execute(pattern='connect michael password',
-                        client=client,
-                        obj=None,
-                        game=game)
+
+        scope = CommandScope(command='connect michael password',
+                             game=game,
+                             client=client)
+        command.execute(scope=scope)
+
         self.assertNotEquals(client.user_object, None)
         client.user_object = None
-        command.execute(pattern='connect michael pass',
-                             client=client,
-                             obj=None,
-                             game=game)
+        scope = CommandScope(command='connect michael pass',
+                             game=game,
+                             client=client)
+        command.execute(scope=scope)
         self.assertEquals(client.user_object, None)
         self.assertEquals(client.output, "Username or password not found.")
 
-        command.execute(pattern='connect other password',
-                             client=client,
-                             obj=None,
-                             game=game)
+        scope = CommandScope(command='connect other password',
+                             game=game,
+                             client=client)
+        command.execute(scope=scope)
         self.assertEquals(client.user_object, None)
 
     def test_execute_notifies_user_on_fail(self):
@@ -130,10 +133,10 @@ class CommandLoginTest(unittest.TestCase):
         game.database.objects.append(MockPlayerObject('michael', 'blahblah'))
 
         command = CommandLogin.provision()
-        command.execute(pattern='connect michael password',
-                             client=client,
-                             obj=None,
-                             game=game)
+        scope = CommandScope(command='connect michael password',
+                             game=game,
+                             client=client)
+        command.execute(scope=scope)
         self.assertEquals(client.output, "Username or password not found.")
 
     def test_execute_success_calls_login_action(self):
@@ -147,10 +150,10 @@ class CommandLoginTest(unittest.TestCase):
         command = CommandLogin.provision()
         command.action = action
 
-        command.execute(pattern='connect michael password',
-                        client=client,
-                        obj=None,
-                        game=game)
+        scope = CommandScope(command='connect michael password',
+                             game=game,
+                             client=client)
+        command.execute(scope=scope)
         self.assertEquals(action.call_count, 1)
 
     def test_command_has_correct_action(self):

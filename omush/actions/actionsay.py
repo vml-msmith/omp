@@ -2,7 +2,7 @@
 
 from .action import Action
 
-class ActionLogin(Action):
+class ActionSay(Action):
     """Action that is enacted when a player logs in.
 
     This action should never be enacted on a non Player object."""

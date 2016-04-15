@@ -14,8 +14,8 @@ class MockSocketCommand(object):
     def provision(cls):
         return cls()
 
-    def execute(self, client=None, obj=None, game=None):
-        client.notify(self.command)
+    def execute(self, scope):
+        scope.client.notify(self.command)
 
 class MockSocketCommandConnected(MockSocketCommand):
     command = "connected"

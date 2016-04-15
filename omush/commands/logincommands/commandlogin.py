@@ -2,7 +2,7 @@
 """
 from ..command import Command
 import re
-
+from omush.scope import ActionScope
 
 class CommandLogin(Command):
     """Define the connect <name> <password> command
@@ -16,7 +16,8 @@ class CommandLogin(Command):
       - connect "<name with spaces>" <password>
       - connect '<name with spaces>' <password>
     """
-    from ...actions.actionlogin import ActionLogin
+
+    from omush.actions.actionlogin import ActionLogin
 
     command = "connect"
     action = ActionLogin
@@ -60,16 +61,16 @@ class CommandLogin(Command):
           - name: The name of the user. This can contain spaces.
           - password: The password of the user in plain text.
         """
+        matchers = self._get_matchers()
+        if matchers is None:
+            return []
+
         for re_pattern in self._get_matchers():
             match = re_pattern.match(pattern)
             if match is not None:
                 return match.groupdict()
 
-    def execute(self,
-                pattern=None,
-                client=None,
-                obj=None,
-                game=None):
+    def execute(self, scope):
         """Execute the command.
 
         Executing the command will search the database for a user object that
@@ -81,15 +82,16 @@ class CommandLogin(Command):
         If a player object is not found, the client will be notified with a
         failure message.
         """
-        args = self.get_args(pattern)
-        database = game.database
+
+        args = self.get_args(scope.command)
+        database = scope.game.database
         player = database.find_player_by_name(args['name'])
         if player is not None:
             if player.match_password(args['password']):
-                client.set_logged_in_user(player)
+                scope.client.set_logged_in_user(player)
                 action = self.action()
-                action.enact()
+                action.enact(scope=ActionScope(commandScope=scope))
 
                 return
 
-        client.notify("Username or password not found.")
+        scope.client.notify("Username or password not found.")

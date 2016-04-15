@@ -4,5 +4,5 @@ class CommandQuit(Command):
     command = "QUIT"
 
     @classmethod
-    def execute(cls, client=None, obj=None, game=None):
-        client.close()
+    def execute(self, scope):
+        scope.client.close()

@@ -1,6 +1,6 @@
 """Module docstring
 """
-
+from omush.scope import CommandScope
 
 class OMushConnectedClient(object):
     """A client object that associates a socket connection and a user objec.t
@@ -41,9 +41,15 @@ class OMushConnectedClient(object):
             commands built into the server, exits and soft-coded commands.
         """
         command = self._match_command_from_message(message)
+        scope = CommandScope(command=message,
+                             client=self,
+                             game=self.connected_client_manager.game,
+                             caller=self.user_object);
         if command is not None:
-            command.provision().execute(client=self,
-                                        game=self.connected_client_manager.game)
+            import logging
+            logging.warning('found it') # will print a message to the console
+            command.provision().execute(scope);
+
         else:
             self._handle_unknown_message()
 
